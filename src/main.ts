@@ -1,0 +1,65 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+export let globalCache: Cache;
+const sortPathsAlphabetically = (document: any) => {
+  const sortedPaths = Object.keys(document.paths)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = document.paths[key];
+      return acc;
+    }, {});
+
+  document.paths = sortedPaths;
+  return document;
+};
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+  const server = app.getHttpServer();
+  server.setTimeout?.(1500000);
+  server.keepAliveTimeout = 1500000;
+  server.headersTimeout = 1500000;
+
+  const config = new DocumentBuilder()
+    .setTitle('Web Reports API')
+    .setDescription('API del sistema reportes web')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  let document = SwaggerModule.createDocument(app, config);
+  document = sortPathsAlphabetically(document);
+  SwaggerModule.setup('api/v1/docs', app, document, {
+    swaggerOptions: {
+      defaultModelsExpandDepth: -1,
+      defaultModelExpandDepth: 1,
+      docExpansion: 'none',
+      operationsSorter: 'alpha',
+      filter: true,
+      showRequestDuration: true,
+      persistAuthorization: true,
+    },
+  });
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+  const logger = new Logger('Main');
+  const port = Number(process.env.API_PORT) || 3000;
+
+  await app.listen(port);
+
+  logger.log(`Server is listening on port: ${port}`);
+}
+bootstrap();
