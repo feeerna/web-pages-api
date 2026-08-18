@@ -1,11 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { FormDto } from './dto/create-customer.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { WebPagesClients } from './entities/web-pages-clients.entity';
+import { Repository } from 'typeorm';
 // import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
 export class CustomersService {
+  constructor(
+    @InjectRepository(WebPagesClients)
+    private userRepository: Repository<WebPagesClients>,
+  ) {}
+
   create(createCustomerDto: FormDto) {
-    return 'This action adds a new customer';
+    console.log(createCustomerDto);
+    const data = {
+      client_id: 1,
+      client_type: 'people',
+      domain: 'cleinte.com',
+      social_media: {
+        facebook: '',
+        instagram: '',
+        twitter: '',
+        linkedin: '',
+        youtube: '',
+      },
+    };
+    const page = this.userRepository.create(data);
+    return this.userRepository.save(page);
   }
 
   findAll() {

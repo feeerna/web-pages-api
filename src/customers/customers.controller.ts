@@ -8,12 +8,11 @@ import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 @ApiTags('customers')
 @Controller('customers')
 export class CustomersController {
-  constructor() {}
+  constructor(private readonly customersService: CustomersService) {}
 
   @Post()
-  create(@Body() Dto: FormDto) {
-
-    return 'this.customersService.create(createCustomerDto)';
+  create(@Body() createCustomerDto: FormDto) {
+    return this.customersService.create(createCustomerDto);
   }
 
   // @Get()
