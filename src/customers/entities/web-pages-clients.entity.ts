@@ -11,5 +11,10 @@ export class WebPagesClients {
   domain: string;
 
   @Column({ type: 'json', nullable: true })
-  social_media: {};
+  social_media: {
+    form_mail: string;
+  };
+
+  @Column({ type: 'json', nullable: true })
+  form: {};
 }

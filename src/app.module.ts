@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CustomersModule } from './customers/customers.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -8,24 +8,27 @@ import { DataSource } from 'typeorm';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-    }), 
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5433,
-      username: 'postgres',
-      password: '123456',
-      database: 'postgres',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: false,
     }),
+
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        database: configService.get<string>('DB_DATABASE'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false,
+      }),
+    }),
+
     CustomersModule,
   ],
-  controllers: [],
-  
-})
 
-// @Module({
-//   imports: [TypeOrmModule.forRoot(), CustomersModule],
-// })
-export class AppModule {constructor(private dataSource: DataSource){}}
+  controllers: [],
+})
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+}

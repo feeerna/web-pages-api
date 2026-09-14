@@ -19,6 +19,7 @@ export class CustomersService {
       client_type: 'people',
       domain: 'cleinte.com',
       social_media: {
+        form_mail: '',
         facebook: '',
         instagram: '',
         twitter: '',
@@ -44,5 +45,11 @@ export class CustomersService {
 
   remove(id: number) {
     return `This action removes a #${id} customer`;
+  }
+
+  async findClientByDomain(domain: string) {
+    return this.userRepository.findOneBy({
+      domain,
+    });
   }
 }
